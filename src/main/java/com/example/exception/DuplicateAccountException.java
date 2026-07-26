@@ -1,3 +1,5 @@
+package com.example.exception;
+
 // It is good practice, although not necessary, to handle unexpected events in your API using a custom exception in this
 // folder. This file exists to populate the containing folder in a git repository.
 

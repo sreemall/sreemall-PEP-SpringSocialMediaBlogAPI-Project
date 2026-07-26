@@ -3,11 +3,14 @@ package com.example.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.lang.Exception;
 
 import com.example.repository.AccountRepository;
 
-import Model.Account;
+import com.example.entity.Account;
+import com.example.exception.*;;
+
+
 
 @Service
 public class AccountService {
@@ -15,11 +18,11 @@ public class AccountService {
     @Autowired
     private AccountRepository accountRepository;
 
-    public Account addAccount (com.example.entity.Account account) {
+    public Account addAccount (Account account) throws  Exception {
         String username = account.getUsername ();
         String password = account.getPassword();
 
-        if ((username != null) && (username.length >= 1) && 
+        if ((username != null) && (username.length() >= 1) && 
                 (password != null) && (password.length() >= 4)) {  //valid username and password
             if (!accountRepository.existByUsername(username)) // no duplicate
                 return accountRepository.save (account);
@@ -27,6 +30,8 @@ public class AccountService {
                 throw new DuplicateAccountException (username);
             } 
         }
+        else
+            throw new InvalidCredentialsException ("Invalid username/password!");
     }
 
     // public Account addAccount (Account account) {
@@ -46,20 +51,3 @@ public class AccountService {
 
 }
 
-
-
-public class BookService {
-
-    @Autowired
-    private BookRepository bookRepository;
-
-    public List<Book> getAllBooks() {
-        return bookRepository.findAll();
-    }
-    
-    public Book saveBook(Book book) {
-        return bookRepository.save(book);
-    }
-
-    // Additional methods omitted for brevity
-}
