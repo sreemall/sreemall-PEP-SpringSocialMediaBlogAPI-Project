@@ -102,24 +102,16 @@ public class SocialMediaController {
     }
 
     @RequestMapping(value="/messages/{message_id}", method = RequestMethod.PATCH)
-    public ResponseEntity<Integer> updateMessageTextByIdHandler (@PathVariable Integer message_id, @RequestBody String message_text) {
+    public ResponseEntity<Integer> updateMessageTextByIdHandler (@PathVariable Integer message_id, @RequestBody Message message) {
     
-        Integer count = messageService.updateMessageTextById(message_id, message_text);
+        Integer count = messageService.updateMessageTextById(message_id, message.getMessageText());
 
         if (count != null) {
             return ResponseEntity.ok().body(count);
         }
         else {
             return ResponseEntity.badRequest().body(null);
-        }
-
-        // if (messageService.updateMessageTextById(message_id, message_text) != null) {
-        //     return ResponseEntity.ok().body(1);
-        // }
-        // else {
-        //     return ResponseEntity.badRequest().body(null);
-        // }    
-        
+        }  
     }
 
     @RequestMapping(value="/accounts/{account_id}/messages", method = RequestMethod.GET)
