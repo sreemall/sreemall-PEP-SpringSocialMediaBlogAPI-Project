@@ -1,17 +1,20 @@
 package com.example.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.example.repository.AccountRepository;
 import com.example.repository.MessageRepository;
 
-import main.java.com.example.exception.InvalidMessagePostedUser;
-import main.java.com.example.exception.InvalidMessageText;
+import com.example.exception.InvalidMessagePostedUser;
+import com.example.exception.InvalidMessageText;
 
 import java.util.List;
 
-import com.example.MessageRepository;
 import com.example.entity.Message;
 import com.example.exception.*;
 
+@Service
 public class MessageService {
 
     private final MessageRepository messageRepository;
@@ -45,21 +48,23 @@ public class MessageService {
     }
 
     public Message getMessageById (Integer message_id) {
-        return messageRepository.findById (message_id);
+
+         return messageRepository.findById (message_id).orElse(null);
+        
     }
 
     public Integer deleteMessageById (Integer message_id) {
-        if (messageRepository.existsByMessageId (message_id)) {
-            messageRepository.deleteMessageById (message_id);
+        if (messageRepository.existsById (message_id)) {
+            messageRepository.deleteById (message_id);
             return 1;
         }
         else
             return null;
     }
 
-    public Integer UpdateMessageTextById (Integer message_id, String message_tedt) {
+    public Integer updateMessageTextById (Integer message_id, String message_text) {
         if ((message_text != null) && (!message_text.isBlank()) && (message_text.length() <=255)) {
-            Message message = messageRepository.findById (message_id);
+            Message message = messageRepository.findById (message_id).orElse(null);
             if (message != null) {
                 message.setMessageText (message_text);
                 messageRepository.save (message);

@@ -2,9 +2,9 @@ package com.example.controller;
 
 import java.util.*;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,8 +18,6 @@ import com.example.entity.Message;
 import com.example.service.AccountService;
 import com.example.service.MessageService;
 
-import main.java.com.example.exception.InvalidLoginCredentialsException;
-
 import com.example.exception.*;
 
 
@@ -31,13 +29,14 @@ import com.example.exception.*;
  */
 @RestController
 public class SocialMediaController {
-    AccountService accountService;
-    MessageService messageService;
 
-    
-    public SocialMediaController() {
-        this.accountService = new AccountService();
-        this.messageService = new MessageService();
+    private final AccountService accountService;
+    private final MessageService messageService;
+
+    @Autowired
+    public SocialMediaController(AccountService accountService, MessageService messageService) {
+        this.accountService = accountService;
+        this.messageService = messageService;
     }
 
     @RequestMapping(value="/register", method = RequestMethod.POST)
@@ -76,13 +75,13 @@ public class SocialMediaController {
     public ResponseEntity<?> postMessageHandler(@RequestBody Message message)  {
 
         try {
-            Message newMesage = messageService.addMessage(message);
+            Message newMessage = messageService.addMessage(message);
+
+            return ResponseEntity.ok().body(newMessage);
         }
         catch (Exception e) {
-            ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-        
-        return newMessage();
     }
 
     @RequestMapping(value="/messages", method = RequestMethod.GET)
@@ -99,19 +98,21 @@ public class SocialMediaController {
     @RequestMapping(value="/messages/{message_id}", method = RequestMethod.DELETE)
     public Integer deleteMessageByIdHandler (@PathVariable Integer message_id) {
 
-        return messageService.deleteMessageById("message_id");
+        return messageService.deleteMessageById(message_id);
     }
 
     @RequestMapping(value="/messages/{message_id}", method = RequestMethod.PATCH)
-    public ResponseEntity<Integer> updateMessageTextByIdHandler (@PathVariable Integer message_id,
-                                                @RequestBody String message_text) {
+    public ResponseEntity<Integer> updateMessageTextByIdHandler (@PathVariable Integer message_id, @RequestBody String message_text) {
     
-        if (messageService.UpdateMessageTextById(message_id, message_text) != null) {
-            ResponseEntity.ok().body(1);
-        }
-        else {
-            ResponseEntity.badRequest().body(null);
-        }    
+        return ResponseEntity.ok(messageService.updateMessageTextById(message_id, message_text));
+
+        // if (messageService.updateMessageTextById(message_id, message_text) != null) {
+        //     return ResponseEntity.ok().body(1);
+        // }
+        // else {
+        //     return ResponseEntity.badRequest().body(null);
+        // }    
+        
     }
 
     @RequestMapping(value="/accounts/{account_id}/messages", method = RequestMethod.GET)
