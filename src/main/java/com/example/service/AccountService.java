@@ -15,17 +15,22 @@ import com.example.exception.*;;
 @Service
 public class AccountService {
 
-    @Autowired
-    private AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
 
-    public Account addAccount (Account account) throws  Exception {
+    @Autowired
+    public AccountService (AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
+
+    public Account addAccount (Account account) {
         String username = account.getUsername ();
         String password = account.getPassword();
 
-        if ((username != null) && (username.length() >= 1) && 
+        if ((username != null) && !username.isBlank() && 
                 (password != null) && (password.length() >= 4)) {  //valid username and password
-            if (!accountRepository.existByUsername(username)) // no duplicate
+            if (!accountRepository.existsByUsername(username)) {  // no duplicate
                 return accountRepository.save (account);
+            }
             else  { //duplicate
                 throw new DuplicateAccountException (username);
             } 
@@ -34,20 +39,16 @@ public class AccountService {
             throw new InvalidCredentialsException ("Invalid username/password!");
     }
 
-    // public Account addAccount (Account account) {
-    //     String username = account.getUsername ();
-    //     if ((username != null) && (username.length() >= 1) &&  (account.getPassword ().length() >= 4)) {
-    //         if (accountDAO.selectAccountByUsername(username) == null) {
-    //             return accountDAO.insertAccount(account);
-    //         }
-    //     }
-
-    //     return null;
-    // }
-
-    // public Account login (Account account) {
-    //     return accountDAO.login (account);
-    // }
+    public Account login (Account account) {
+        Account newAccount = accountRepository.findByUsernameAndPassword(account.getUsername(),
+                                                                    account.getPassword());
+        if (newAccount == null) {
+            throw new InvalidLoginCredentialsException ("Invalid username/password!");
+        }
+        else {
+            return newAccount;
+        }
+    }
 
 }
 

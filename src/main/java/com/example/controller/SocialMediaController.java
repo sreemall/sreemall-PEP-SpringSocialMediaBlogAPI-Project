@@ -18,7 +18,10 @@ import com.example.entity.Message;
 import com.example.service.AccountService;
 import com.example.service.MessageService;
 
-import com.example.exception.DuplicateAccountException;
+import main.java.com.example.exception.InvalidLoginCredentialsException;
+
+import com.example.exception.*;
+
 
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller using Spring. The endpoints you will need can be
@@ -51,82 +54,69 @@ public class SocialMediaController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(e.getMessage());
         }
-        catch (Exception e) {
+        catch (InvalidCredentialsException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @RequestMapping(value="/login", method = RequestMethod.POST)
-    public Account loginHandler ()  {
-        // ObjectMapper mapper = new ObjectMapper ();
-        // Account account = mapper.readValue(ctx.body(), Account.class);
+    public ResponseEntity<?> loginHandler (@RequestBody Account account)  {
 
-        // account = accountService.login (account);
-        // if (account != null) {
-        //     ctx.json (account);
-        // }
-        // else
-        //     ctx.status (400);
+        try {
+            account = accountService.login (account);
+        }
+        catch (InvalidLoginCredentialsException e) {
+            return ResponseEntity.status (HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
 
-        return new Account();
+        return ResponseEntity.ok().body(account);
     }
 
     @RequestMapping(value="/messages", method = RequestMethod.POST)
-    public Message postMessageHandler()  {
-        // ObjectMapper mapper = new ObjectMapper();
+    public ResponseEntity<?> postMessageHandler(@RequestBody Message message)  {
 
-        // Message message = mapper.readValue(ctx.body(), Message.class);
-
-        // Message newMesage = messageService.addMessage(message);
-        // if (newMesage == null) {
-        //     ctx.status(400);
-        // } else {
-        //     ctx.json(newMesage);
-        // }
-        return new Message();
+        try {
+            Message newMesage = messageService.addMessage(message);
+        }
+        catch (Exception e) {
+            ResponseEntity.badRequest().body(e.getMessage());
+        }
+        
+        return newMessage();
     }
 
-    // @RequestMapping("/messages", method = RequestMethod.GET)
-    // public List<Message> getAllMessagesHandler() {
-    //     // ctx.json(messageService.getAllMessages());
-    // }
+    @RequestMapping(value="/messages", method = RequestMethod.GET)
+    public List<Message> getAllMessagesHandler() {
+        return messageService.getAllMessages ();
+    }
 
-    // @RequestMapping("/messages/{message_id}", method = RequestMethod.GET)
-    // public Message getMessageByIdHandler () {
-    //     // messageService.getMessageById(Integer.parseInt(ctx.pathParam("message_id")));
-    //     return new Message();
-    // }
+    @RequestMapping(value="/messages/{message_id}", method = RequestMethod.GET)
+    public Message getMessageByIdHandler (@PathVariable Integer message_id) {
+        return messageService.getMessageById(message_id);
+        
+    }
 
-    // @RequestMapping("/messages/{message_id}", method = RequestMethod.DELETE)
-    // public Message deleteMessageByIdHandler () {
-    //     // Message message = messageService.deleteMessageById(Integer.parseInt(ctx.pathParam("message_id")));
-    //     // if (message == null)
-    //     //     ctx.status (200);
-    //     // else
-    //     //     ctx.json (message);
-    //     return new Message();
-    // }
+    @RequestMapping(value="/messages/{message_id}", method = RequestMethod.DELETE)
+    public Integer deleteMessageByIdHandler (@PathVariable Integer message_id) {
 
-    // @RequestMapping("/messages/{message_id}", method = RequestMethod.PATCH)
-    // public Message updateMessageTextByIdHandler () {
-    //     // ObjectMapper mapper = new ObjectMapper();
-    //     // Message message = mapper.readValue(ctx.body(), Message.class);
-    //     // message = messageService.UpdateMessageTextById(Integer.parseInt(
-    //     //                                         ctx.pathParam ("message_id")),
-    //     //                                         message.getMessage_text());
-    //     // if (message == null)
-    //     //     ctx.status (400);
-    //     // else
-    //     //     ctx.json (message);
-    //     return new Message();
-    // }
+        return messageService.deleteMessageById("message_id");
+    }
 
-    // @RequestMapping("/accounts/{account_id}/messages", method = RequestMethod.GET)
-    // public List<Message> getAllMessagesByUserHandler () {
-    //     //ctx.json (messageService.getAllMessagesByUser (Integer.parseInt(ctx.pathParam ("account_id"))));
-    //     return new ArrayList<>()
-    // }
+    @RequestMapping(value="/messages/{message_id}", method = RequestMethod.PATCH)
+    public ResponseEntity<Integer> updateMessageTextByIdHandler (@PathVariable Integer message_id,
+                                                @RequestBody String message_text) {
+    
+        if (messageService.UpdateMessageTextById(message_id, message_text) != null) {
+            ResponseEntity.ok().body(1);
+        }
+        else {
+            ResponseEntity.badRequest().body(null);
+        }    
+    }
 
-
+    @RequestMapping(value="/accounts/{account_id}/messages", method = RequestMethod.GET)
+    public List<Message> getAllMessagesByUserHandler (@PathVariable Integer account_id) {
+        return messageService.getAllMessagesByUser (account_id);  
+    }
 
 }
